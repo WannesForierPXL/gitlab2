@@ -1,0 +1,33 @@
+name: Docker CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+    
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    
+      - name: Build and push Docker image
+        run: |
+          IMAGE_NAME=wannesf/myapp
+          TAG=${GITHUB_REF##refs/tags/}
+          docker build -t $IMAGE_NAME:latest $( [ -n "$TAG" ] && echo "-t $IMAGE_NAME:$TAG" ) .
+          docker push $IMAGE_NAME:latest
+          if [ -n "$TAG" ]; then
+            docker push $IMAGE_NAME:$TAG
+          fi
+    
+      - name: Scan Docker image for CVEs
+        uses: docker/scout-action@v1
+        with:
+          image: your-dockerhub-username/your-app:latest
