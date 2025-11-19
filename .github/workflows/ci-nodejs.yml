@@ -1,0 +1,36 @@
+name: ci nodejs
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v6.0.0
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: test the code
+        run: npm test
+
+      - name: Run tests with coverage
+        run: npm test -- --coverage
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: |
+            coverage
+            test-results
+
+      
